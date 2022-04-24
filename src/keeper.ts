@@ -31,16 +31,16 @@ require('dotenv').config({ path: '.env' });
 let lastRootBankCacheUpdate = 0;
 const groupName = process.env.GROUP || 'mainnet.2';
 const updateCacheInterval = parseInt(
-  process.env.UPDATE_CACHE_INTERVAL || '3000',
+  process.env.UPDATE_CACHE_INTERVAL || '10000',
 );
 const updateRootBankCacheInterval = parseInt(
-  process.env.UPDATE_ROOT_BANK_CACHE_INTERVAL || '5000',
+  process.env.UPDATE_ROOT_BANK_CACHE_INTERVAL || '10000',
 );
 const processKeeperInterval = parseInt(
-  process.env.PROCESS_KEEPER_INTERVAL || '10000',
+  process.env.PROCESS_KEEPER_INTERVAL || '20000',
 );
 const consumeEventsInterval = parseInt(
-  process.env.CONSUME_EVENTS_INTERVAL || '1000',
+  process.env.CONSUME_EVENTS_INTERVAL || '3000',
 );
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
@@ -72,7 +72,7 @@ const connection = new Connection(
 console.log("DEVNET RPC: ", process.env.DEVNET_ENDPOINT_URL)
 const client = new EntropyClient(connection, entropyProgramId);
 
-async function main() {
+export async function runKeeper() {
   if (!groupIds) {
     throw new Error(`Group ${groupName} not found`);
   }
@@ -340,4 +340,4 @@ async function processKeeperTransactions(
   }
 }
 
-main();
+runKeeper();
