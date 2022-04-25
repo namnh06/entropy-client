@@ -6,6 +6,7 @@ import PerpMarket from './PerpMarket';
 import PerpAccount from './PerpAccount';
 import PerpEventQueue from './PerpEventQueue';
 import RootBank from './RootBank';
+
 export {
   IDL,
   IDS,
@@ -26,4 +27,3 @@ export * from './layout';
 export * from './token';
 export * from './types';
 export * from './utils';
-export {runKeeper} from './keeper';
