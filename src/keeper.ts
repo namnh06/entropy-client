@@ -29,6 +29,7 @@ import { PROGRAM_LAYOUT_VERSIONS } from '@project-serum/serum/lib/tokens_and_mar
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { Options, PositionalOptions } from 'yargs';
+import { should } from 'chai';
 
 require('dotenv').config({ path: '.env' });
 
@@ -77,6 +78,7 @@ console.log("DEVNET RPC: ", process.env.DEVNET_ENDPOINT_URL)
 const client = new EntropyClient(connection, entropyProgramId);
 
 export async function runKeeper(shouldRun=0) {
+  console.log("shouldRun: ", shouldRun);
   if (shouldRun != 1) {
     return;
   }
