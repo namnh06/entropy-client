@@ -356,6 +356,7 @@ yargs(hideBin(process.argv)).command(
     return;
   },
   async (args) => {
+    console.log("Running keeper via args");
     runKeeper(1);
   },
 ).argv;
