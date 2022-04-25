@@ -73,6 +73,7 @@ console.log("DEVNET RPC: ", process.env.DEVNET_ENDPOINT_URL)
 const client = new EntropyClient(connection, entropyProgramId);
 
 export async function runKeeper(shouldRun=0) {
+  console.log("shouldRun: ", shouldRun);
   if (shouldRun!=1) {
     return;
   }
