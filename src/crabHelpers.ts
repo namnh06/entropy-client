@@ -51,9 +51,11 @@ export async function getCrabDelta(pubkey=CRAB_PUBKEY) {
     ).marketIndex;
 
     const btc2PerpAccount = entropyAccount.perpAccounts[btc2MarketIndex];
-    const btc2Quote = btc2PerpAccount.getQuotePosition(
-        entropyCache.perpMarketCache[btc2MarketIndex]
-    ).toNumber() / quoteAdj.toNumber();
+    const btc2Quote = Math.abs(
+        btc2PerpAccount.getQuotePosition(
+            entropyCache.perpMarketCache[btc2MarketIndex]
+        ).toNumber() / quoteAdj.toNumber()
+    );
     const btc2Sign = Math.sign(
         entropyAccount.getBasePositionUiWithGroup(
             btc2MarketIndex,
@@ -62,16 +64,17 @@ export async function getCrabDelta(pubkey=CRAB_PUBKEY) {
     );
 
     const btcPerpAccount = entropyAccount.perpAccounts[btcMarketIndex];
-    const btcQuote = btcPerpAccount.getQuotePosition(
-        entropyCache.perpMarketCache[btcMarketIndex]
-    ).toNumber() / quoteAdj.toNumber();
+    const btcQuote = Math.abs(
+        btcPerpAccount.getQuotePosition(
+            entropyCache.perpMarketCache[btcMarketIndex]
+        ).toNumber() / quoteAdj.toNumber()
+    );
     const btcSign = Math.sign(
         entropyAccount.getBasePositionUiWithGroup(
             btcMarketIndex,
             entropyGroup,
         )
     );
-        // Assumes we are always short the BTC position.
     const delta = (btc2Quote*btc2Sign*2+btcQuote*btcSign)/equity;
     console.log("Delta: ", delta);
     return delta
