@@ -66,7 +66,7 @@
     "@ethersproject/logger" "^5.6.0"
     hash.js "1.1.7"
 
-"@friktion-labs/entropy-client@^1.0.0":
+"@friktion-labs/entropy-client@1.4.8", "@friktion-labs/entropy-client@^1.0.0":
   version "1.4.8"
   resolved "https://registry.yarnpkg.com/@friktion-labs/entropy-client/-/entropy-client-1.4.8.tgz#dd9c6a386603114e93467847ba513ffbc35924a9"
   integrity sha512-yB8ZEzhJ9olqo9wV4Mr7DuVnIQFFZMKRG3Ia4RYg8w2DjZSt2aJRw44f21tAJMmE7QK2/4WiOt3WquocOi8uuw==

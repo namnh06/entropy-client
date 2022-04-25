@@ -340,4 +340,8 @@ async function processKeeperTransactions(
   }
 }
 
-runKeeper();
+export async function main() {
+  runKeeper();
+}
+
+main();
