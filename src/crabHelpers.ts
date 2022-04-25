@@ -17,7 +17,7 @@ import { QUOTE_INDEX } from './layout';
 import { BN } from 'bn.js';
 import {readConfig, openConnection} from './cli'
 
-export const CRAB_PUBKEY = 'ASVf3MRC3hpM7tc33r7UVdXN5wowLQoUBd328JPhKaug';
+export const CRAB_PUBKEY = 'VKH3Tf7yAgxU5JKkuU7HLmrYCvnGM2LKsPL9bvgRHq3';
 
 export async function getCrabDelta(pubkey=CRAB_PUBKEY) {
     const config = readConfig(__dirname+'/ids.json' as string);
