@@ -19,7 +19,7 @@ import {readConfig, openConnection} from './cli'
 
 export const CRAB_PUBKEY = 'VKH3Tf7yAgxU5JKkuU7HLmrYCvnGM2LKsPL9bvgRHq3';
 
-export async function getCrabDelta() {
+export async function getCrabDelta(pubkey=CRAB_PUBKEY) {
     const config = readConfig(__dirname+'/ids.json' as string);
     const groupConfig = config.getGroupWithName(
         'mainnet.2' as string,
@@ -30,7 +30,7 @@ export async function getCrabDelta() {
     const client = new EntropyClient(connection, groupConfig.entropyProgramId);
     const entropyGroup = await client.getEntropyGroup(groupConfig.publicKey);
     const entropyAccount = await client.getEntropyAccount(
-        new PublicKey(CRAB_PUBKEY),
+        new PublicKey(pubkey),
         entropyGroup.dexProgramId
     );
     const entropyCache = await entropyGroup.loadCache(connection);
@@ -73,5 +73,5 @@ export async function getCrabDelta() {
     const delta = (btc2TotalPos*2+btcTotalPos)/equity;
     console.log("Delta: ", delta);
     return delta
-
 }
+// getCrabDelta();
