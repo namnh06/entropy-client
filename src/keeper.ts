@@ -26,6 +26,10 @@ import { PerpEventQueueLayout } from './layout';
 import { EntropyGroup, PerpMarket, promiseUndef } from '.';
 import PerpEventQueue from './PerpEventQueue';
 import { PROGRAM_LAYOUT_VERSIONS } from '@project-serum/serum/lib/tokens_and_markets';
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
+import { Options, PositionalOptions } from 'yargs';
+
 require('dotenv').config({ path: '.env' });
 
 let lastRootBankCacheUpdate = 0;
@@ -72,11 +76,7 @@ const connection = new Connection(
 console.log("DEVNET RPC: ", process.env.DEVNET_ENDPOINT_URL)
 const client = new EntropyClient(connection, entropyProgramId);
 
-export async function runKeeper(shouldRun=0) {
-  console.log("shouldRun: ", shouldRun);
-  if (shouldRun!=1) {
-    return;
-  }
+export async function runKeeper() {
   if (!groupIds) {
     throw new Error(`Group ${groupName} not found`);
   }
@@ -344,8 +344,13 @@ async function processKeeperTransactions(
   }
 }
 
-async function main() {
-  runKeeper(1);
-}
-
-main();
+yargs(hideBin(process.argv)).command(
+  'run',
+  'runs the keeper',
+  (y) => {
+    return;
+  },
+  async (args) => {
+    runKeeper();
+  },
+).argv;
