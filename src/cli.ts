@@ -70,7 +70,7 @@ const symbolDesc: [string, PositionalOptions] = [
   { describe: 'the base token symbol', type: 'string' },
 ];
 
-function openConnection(config: Config, cluster: Cluster) {
+export function openConnection(config: Config, cluster: Cluster) {
   return new Connection(
     config.cluster_urls[cluster],
     'confirmed' as Commitment,

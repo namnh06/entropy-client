@@ -1,6 +1,6 @@
 {
   "name": "@friktion-labs/entropy-client",
-  "version": "1.4.6",
+  "version": "1.4.61",
   "description": "Client to interact with Entropy Markets on Solana",
   "main": "lib/src/index.js",
   "types": "lib/src/index.d.ts",
