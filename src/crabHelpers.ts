@@ -52,7 +52,7 @@ async function getMidpoint(symbol: string, entropyGroup: EntropyGroup, groupConf
 }
 
 /*This function calculates the net delta exposure of the Crab Volt by taking the base position of BTC*/
-export async function getCrabDelta(symbol: string, conn, pubkey: string=CRAB_PUBKEY) {
+export async function getCrabDelta(symbol: string, conn: Connection, pubkey: string=CRAB_PUBKEY) {
     const config = readConfig(__dirname+'/ids.json' as string);
     const symbolSq = symbol+"^2";
     console.log("Connection: ", conn);
@@ -129,4 +129,4 @@ export async function getCrabDelta(symbol: string, conn, pubkey: string=CRAB_PUB
 
 
 // }
-getCrabDelta("BTC");
+// getCrabDelta("BTC");
