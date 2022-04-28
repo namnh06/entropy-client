@@ -55,7 +55,6 @@ async function getMidpoint(symbol: string, entropyGroup: EntropyGroup, groupConf
 export async function getCrabDelta(symbol: string, conn: Connection, pubkey: string=CRAB_PUBKEY) {
     const config = readConfig(__dirname+'/ids.json' as string);
     const symbolSq = symbol+"^2";
-    console.log("Connection: ", conn);
     // Establish connection, gather metadata, caches, and configs
     const groupConfig = config.getGroupWithName(
         'mainnet.2' as string,
