@@ -31,6 +31,7 @@ import axios from 'axios';
 //import { expand } from 'dotenv-expand';
 
 //expand(Env.config());
+require('dotenv').config({ path: '.env' });
 
 const interval = parseInt(process.env.INTERVAL || '3500');
 const refreshAccountsInterval = parseInt(
