@@ -21,6 +21,10 @@ import {
   Market,
 } from '@project-serum/serum';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {processConsumeEvents} from './keeper'
+
+require('dotenv').config({ path: '.env' });
+
 
 // const interval = process.env.INTERVAL || 3500;
 const interval = 100; // TODO - stop sharing env var with Keeper
@@ -49,108 +53,28 @@ const connection = new Connection(
   'confirmed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);
-
+console.log(process.env.RPC_ENDPOINT);
 async function run() {
   if (!groupIds) {
     throw new Error(`Group ${groupName} not found`);
   }
   const entropyGroup = await client.getEntropyGroup(entropyGroupKey);
 
-  const spotMarkets = await Promise.all(
-    groupIds.spotMarkets.map((m) => {
-      return Market.load(
-        connection,
-        m.publicKey,
-        {
-          skipPreflight: true,
-          commitment: 'confirmed' as Commitment,
-        },
-        entropyGroup.dexProgramId,
-      );
-    }),
-  );
-
-  const quoteToken = new Token(
-    connection,
-    spotMarkets[0].quoteMintAddress,
-    TOKEN_PROGRAM_ID,
-    payer,
-  );
-  const quoteWallet = await quoteToken
-    .getOrCreateAssociatedAccountInfo(payer.publicKey)
-    .then((a) => a.address);
-
-  const baseWallets = await Promise.all(
-    spotMarkets.map((m) => {
-      const token = new Token(
-        connection,
-        m.baseMintAddress,
-        TOKEN_PROGRAM_ID,
-        payer,
-      );
-
-      return token
-        .getOrCreateAssociatedAccountInfo(payer.publicKey)
-        .then((a) => a.address);
-    }),
-  );
-
-  const eventQueuePks = spotMarkets.map(
-    (market) => market['_decoded'].eventQueue,
-  );
-
-  // eslint-disable-next-line
-  while (true) {
-    const eventQueueAccts = await getMultipleAccounts(
-      connection,
-      eventQueuePks,
-    );
-    for (let i = 0; i < eventQueueAccts.length; i++) {
-      const accountInfo = eventQueueAccts[i].accountInfo;
-      const events = decodeEventQueue(accountInfo.data);
-
-      if (events.length === 0) {
-        continue;
-      }
-
-      const accounts: Set<string> = new Set();
-      for (const event of events) {
-        accounts.add(event.openOrders.toBase58());
-
-        // Limit unique accounts to first 10
-        if (accounts.size >= maxUniqueAccounts) {
-          break;
-        }
-      }
-
-      const openOrdersAccounts = [...accounts]
-        .map((s) => new PublicKey(s))
-        .sort((a, b) => a.toBuffer().swap64().compare(b.toBuffer().swap64()));
-
-      const instr = DexInstructions.consumeEvents({
-        market: spotMarkets[i].publicKey,
-        eventQueue: spotMarkets[i]['_decoded'].eventQueue,
-        coinFee: baseWallets[i],
-        pcFee: quoteWallet,
-        openOrdersAccounts,
-        limit: consumeEventsLimit,
-        programId: entropyGroup.dexProgramId,
-      });
-
-      const transaction = new Transaction();
-      transaction.add(instr);
-
-      console.log(
-        'market',
-        i,
-        'sending consume events for',
-        events.length,
-        'events',
-      );
-      await client.sendTransaction(transaction, payer, []);
-    }
-    await sleep(interval);
+  if (!groupIds) {
+    throw new Error(`Group ${groupName} not found`);
   }
+  const perpMarkets = await Promise.all(
+    groupIds.perpMarkets.map((m) => {
+      return entropyGroup.loadPerpMarket(
+        connection,
+        m.marketIndex,
+        m.baseDecimals,
+        m.quoteDecimals,
+      );
+    }),
+  );
+
+  processConsumeEvents(entropyGroup, perpMarkets, 100);
 }
 
 run();

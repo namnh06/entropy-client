@@ -189,9 +189,10 @@ async function processUpdateCache(entropyGroup: EntropyGroup) {
   }
 }
 
-async function processConsumeEvents(
+export async function processConsumeEvents(
   entropyGroup: EntropyGroup,
   perpMarkets: PerpMarket[],
+  customInterval: number=consumeEventsInterval
 ) {
   try {
     const eventQueuePks = perpMarkets.map((mkt) => mkt.eventQueue);
@@ -268,7 +269,7 @@ async function processConsumeEvents(
   } finally {
     setTimeout(
       processConsumeEvents,
-      consumeEventsInterval,
+      customInterval,
       entropyGroup,
       perpMarkets,
     );
