@@ -1,0 +1,32 @@
+[
+    {
+        "name": "serum",
+        "rpc_endpoint": "https://solana-api.projectserum.com",
+        "update_cache_interval": 10000,
+        "update_root_bank_cache_interval": 10000,
+        "process_keeper_interval": 10000,
+        "consume_events_interval": 3000,
+        "max_unique_accounts": 10,
+        "consume_events_limit": 10
+    },
+    {
+        "name": "solana-mainnet",
+        "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+        "update_cache_interval": 60000,
+        "update_root_bank_cache_interval": 60000,
+        "process_keeper_interval": 60000,
+        "consume_events_interval": 30000,
+        "max_unique_accounts": 10,
+        "consume_events_limit": 10
+    },
+    {
+        "name": "genesysgo",
+        "rpc_endpoint": "https://ssc-dao.genesysgo.net",
+        "update_cache_interval": 30000,
+        "update_root_bank_cache_interval": 30000,
+        "process_keeper_interval": 30000,
+        "consume_events_interval": 10000,
+        "max_unique_accounts": 10,
+        "consume_events_limit": 10
+    }
+]

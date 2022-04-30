@@ -36,8 +36,8 @@ export class Fetcher {
     // we don't need to load a solana Account; we're not gonna be signing anything
 
     const connection = new Connection(
-      process.env.ENDPOINT_URL || config.cluster_urls[cluster],
-      'confirmed' as Commitment,
+      process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
+      'processed' as Commitment,
     );
     const client = new EntropyClient(connection, entropyProgramId);
     const entropyGroup = await client.getEntropyGroup(entropyGroupKey);
