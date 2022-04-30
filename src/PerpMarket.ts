@@ -136,6 +136,12 @@ export default class PerpMarket {
     } else {
       diff = 0;
     }
+
+    // BTC^2 has a different funding period:
+    if (marketIndex == 0) {
+      diff = diff/7;
+    }
+
     return diff / 24;
   }
 

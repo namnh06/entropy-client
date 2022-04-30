@@ -31,6 +31,7 @@ import axios from 'axios';
 //import { expand } from 'dotenv-expand';
 
 //expand(Env.config());
+require('dotenv').config({ path: '.env' });
 
 const interval = parseInt(process.env.INTERVAL || '3500');
 const refreshAccountsInterval = parseInt(
@@ -79,8 +80,8 @@ const payer = new Account(
   ),
 );
 console.log(`Payer: ${payer.publicKey.toBase58()}`);
-const rpcEndpoint = process.env.ENDPOINT_URL || config.cluster_urls[cluster];
-const connection = new Connection(rpcEndpoint, 'confirmed' as Commitment);
+const rpcEndpoint = process.env.RPC_ENDPOINT || config.cluster_urls[cluster];
+const connection = new Connection(rpcEndpoint, 'processed' as Commitment);
 const client = new EntropyClient(connection, entropyProgramId);
 
 let entropySubscriptionId = -1;

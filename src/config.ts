@@ -314,4 +314,15 @@ export class Config {
   }
 }
 
+export class KeeperConfig {
+  public cluster_urls: Record<Cluster, string>;
+  public groups: GroupConfig[];
+
+  constructor(json: any) {
+    this.cluster_urls = json.cluster_urls;
+    this.groups = json.groups.map((g) => groupConfigFromJson(g));
+  }
+
+}
+
 const staticConfig = new Config(IDS);
