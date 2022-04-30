@@ -74,7 +74,7 @@ const connection = new Connection(
   RPC_ENDPOINT,
   'confirmed' as Commitment,
 );
-console.log("DEVNET RPC: ", process.env.DEVNET_ENDPOINT_URL)
+console.log("DEVNET RPC: ", process.env.DEVNET_RPC_ENDPOINT)
 const client = new EntropyClient(connection, entropyProgramId);
 
 export async function runKeeper(shouldRun=0) {

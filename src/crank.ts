@@ -45,7 +45,7 @@ const payer = new Account(
 );
 
 const connection = new Connection(
-  process.env.ENDPOINT_URL || config.cluster_urls[cluster],
+  process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
   'confirmed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);

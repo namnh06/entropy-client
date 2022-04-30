@@ -32,7 +32,7 @@ const cluster = groupIds.cluster;
 const entropyProgramId = groupIds.entropyProgramId;
 const entropyGroupKey = groupIds.publicKey;
 const connection = new Connection(
-  process.env.ENDPOINT_URL || config.cluster_urls[cluster],
+  process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
   'confirmed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);
