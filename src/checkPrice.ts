@@ -31,7 +31,7 @@ async function checkPrice() {
   ) as GroupConfig;
   const connection = new Connection(
     'https://api.devnet.solana.com',
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
   const client = new EntropyClient(connection, groupConfig.entropyProgramId);
   const entropyGroup = await client.getEntropyGroup(groupConfig.publicKey);

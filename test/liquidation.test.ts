@@ -26,7 +26,7 @@ async function testPerpLiquidationAndBankruptcy() {
   );
   const connection = new Connection(
     config.cluster_urls[cluster],
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
 
   const testGroup = new TestGroup();
