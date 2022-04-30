@@ -349,7 +349,7 @@ function watchAccounts(
           console.error(`could not update entropy account ${err}`);
         }
       },
-      'processed',
+      'confirmed',
       [
         { dataSize: EntropyAccountLayout.span },
         {
@@ -383,7 +383,7 @@ function watchAccounts(
           console.error('Could not match OpenOrdersAccount to EntropyAccount');
         }
       },
-      'processed',
+      'confirmed',
       [
         { dataSize: openOrdersAccountSpan },
         {

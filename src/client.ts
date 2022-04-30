@@ -1,6 +1,7 @@
 import {
   Account,
   AccountInfo,
+  Commitment,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
@@ -100,7 +101,7 @@ import {
 import { I80F48, ZERO_I80F48 } from './fixednum';
 import { Order } from '@project-serum/serum/lib/market';
 
-import { PerpOrderType, WalletAdapter } from './types';
+import { PerpOrderType, WalletAdapter, BlockhashTimes} from './types';
 import { BookSide, PerpOrder } from './book';
 import {
   closeAccount,
@@ -131,16 +132,32 @@ export class EntropyClient {
   connection: Connection;
   programId: PublicKey;
   lastSlot: number;
+  recentBlockhash: string;
+  recentBlockhashTime: number;
+  maxStoredBlockhashes: number;
+  timeout: number | null;
+  // The commitment level used when fetching recentBlockHash
+  blockhashCommitment: Commitment;
   postSendTxCallback?: ({ txid: string }) => void;
 
   constructor(
     connection: Connection,
     programId: PublicKey,
-    opts: { postSendTxCallback?: ({ txid }: { txid: string }) => void } = {},
+    opts: {
+      postSendTxCallback?: ({ txid }: { txid: string }) => void;
+      maxStoredBlockhashes?: number;
+      blockhashCommitment?: Commitment;
+      timeout?: number;
+    } = {},
   ) {
     this.connection = connection;
     this.programId = programId;
     this.lastSlot = 0;
+    this.recentBlockhash = '';
+    this.recentBlockhashTime = 0;
+    this.maxStoredBlockhashes = opts?.maxStoredBlockhashes || 7;
+    this.blockhashCommitment = opts?.blockhashCommitment || 'confirmed';
+    this.timeout = opts?.timeout || 60000;
     if (opts.postSendTxCallback) {
       this.postSendTxCallback = opts.postSendTxCallback;
     }
@@ -168,9 +185,17 @@ export class EntropyClient {
   }
 
   async signTransaction({ transaction, payer, signers }) {
-    transaction.recentBlockhash = (
-      await this.connection.getRecentBlockhash()
-    ).blockhash;
+    const now = getUnixTs();
+    let blockhash;
+    // Get new blockhash if stored blockhash more than 70 seconds old
+    if (this.recentBlockhashTime && now < this.recentBlockhashTime + 70) {
+      blockhash = this.recentBlockhash;
+    } else {
+      blockhash = (
+        await this.connection.getRecentBlockhash('confirmed')
+        ).blockhash;
+    }
+    transaction.recentBlockhash = blockhash;
     transaction.setSigners(payer.publicKey, ...signers.map((s) => s.publicKey));
     if (signers.length > 0) {
       transaction.partialSign(...signers);
@@ -194,8 +219,16 @@ export class EntropyClient {
     }[];
     payer: Account | WalletAdapter;
   }) {
-    const blockhash = (await this.connection.getRecentBlockhash('max'))
-      .blockhash;
+    const now = getUnixTs();
+    let blockhash;
+    // Get new blockhash if stored blockhash more than 70 seconds old
+    if (this.recentBlockhashTime && now < this.recentBlockhashTime + 70) {
+      blockhash = this.recentBlockhash;
+    } else {
+      blockhash = (
+        await this.connection.getRecentBlockhash('confirmed')
+        ).blockhash;
+    }
     transactionsAndSigners.forEach(({ transaction, signers = [] }) => {
       transaction.recentBlockhash = blockhash;
       transaction.setSigners(
@@ -232,7 +265,7 @@ export class EntropyClient {
     payer: Account | WalletAdapter | Keypair,
     additionalSigners: Account[],
     timeout: number | null = 60000,
-    confirmLevel: TransactionConfirmationStatus = 'processed',
+    confirmLevel: TransactionConfirmationStatus = 'confirmed',
     marketName?: string | null
   ): Promise<TransactionSignature> {
     await this.signTransaction({
@@ -258,14 +291,14 @@ export class EntropyClient {
     }
 
     // console.log('checking timeout');
-
+    timeout = this.timeout || timeout;
     if (!timeout) return txid;
 
     console.log(new Date().toISOString(), `${marketName} Started awaiting confirmation for txid: `, txid, ' size:', rawTransaction.length);
 
     let done = false;
     let retryCount = 0;
-    const retrySleep = 2000;
+    let retrySleep = 1000;
     (async () => {
       // TODO - make sure this works well on mainnet
       while (!done && getUnixTs() - startTime < timeout / 1000) {
@@ -275,6 +308,9 @@ export class EntropyClient {
         this.connection.sendRawTransaction(rawTransaction, {
           skipPreflight: true,
         });
+      }
+      if (retrySleep <= 8000) {
+        retrySleep = retrySleep * 2;
       }
     })();
 
@@ -291,7 +327,7 @@ export class EntropyClient {
       let simulateResult: SimulatedTransactionResponse | null = null;
       try {
         simulateResult = (
-          await simulateTransaction(this.connection, transaction, 'processed')
+          await simulateTransaction(this.connection, transaction, 'confirmed')
         ).value;
       } catch (e) {
         console.warn('Simulate transaction failed');
@@ -304,7 +340,7 @@ export class EntropyClient {
             if (line.startsWith('Program log: ')) {
               throw new EntropyError({
                 message:
-                  new Date().toISOString() + `${marketName} Transaction failed: ` + line.slice('Program log: '.length),
+                  new Date().toISOString() + `Transaction failed: ` + line.slice('Program log: '.length),
                 txid,
               });
             }
@@ -322,14 +358,14 @@ export class EntropyClient {
       done = true;
     }
 
-    console.log(new Date().toISOString(), `${marketName} Transaction Latency for txid: `, txid, getUnixTs() - startTime);
+    console.log(new Date().toISOString(), `Transaction Latency for txid: `, txid, getUnixTs() - startTime);
     return txid;
   }
 
   async sendSignedTransaction({
     signedTransaction,
     timeout = 60000,
-    confirmLevel = 'processed',
+    confirmLevel = 'confirmed',
   }: {
     signedTransaction: Transaction;
     timeout?: number;
@@ -381,7 +417,7 @@ export class EntropyClient {
           await simulateTransaction(
             this.connection,
             signedTransaction,
-            'single',
+            'confirmed',
           )
         ).value;
       } catch (e) {
@@ -455,13 +491,13 @@ export class EntropyClient {
                 resolve(result);
               }
             },
-            'processed',
+            'confirmed',
           );
         } catch (e) {
           done = true;
           console.log(new Date().toISOString(), 'WS error in setup', txid, e);
         }
-        let retrySleep = 200;
+        let retrySleep = 400;
         while (!done) {
           // eslint-disable-next-line no-loop-func
           await sleep(retrySleep);
@@ -514,6 +550,37 @@ export class EntropyClient {
 
     done = true;
     return result;
+  }
+
+  async updateRecentBlockhash(blockhashTimes: BlockhashTimes[]) {
+    const now = getUnixTs();
+    const blockhash = (
+      await this.connection.getRecentBlockhash('confirmed')
+    ).blockhash;
+    blockhashTimes.push({ blockhash, timestamp: now });
+
+    const blockhashTime = (
+      blockhashTimes.length >= this.maxStoredBlockhashes
+        ? blockhashTimes.shift()
+        : blockhashTimes[0]
+    ) as { blockhash: string; timestamp: number };
+
+    this.timeout = 90000 - (now - blockhashTime.timestamp);
+    this.recentBlockhash = blockhashTime.blockhash;
+    this.recentBlockhashTime = blockhashTime.timestamp;
+  }
+
+  /**
+   * Maintain a timeout of 30 seconds
+   * @param client
+   */
+   async maintainTimeouts() {
+    const blockhashTimes: BlockhashTimes[] = [];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      await this.updateRecentBlockhash(blockhashTimes);
+      await sleep(10);
+    }
   }
 
   /**
@@ -699,7 +766,7 @@ export class EntropyClient {
   ): Promise<EntropyAccount> {
     const acc = await this.connection.getAccountInfo(
       entropyAccountPk,
-      'processed',
+      'confirmed',
     );
     const entropyAccount = new EntropyAccount(
       entropyAccountPk,
@@ -948,7 +1015,7 @@ export class EntropyClient {
       const space = 165;
       const lamports = await this.connection.getMinimumBalanceForRentExemption(
         space,
-        'processed',
+        'confirmed',
       );
       transaction.add(
         SystemProgram.createAccount({
@@ -1602,7 +1669,7 @@ export class EntropyClient {
           const openOrdersLamports =
             await this.connection.getMinimumBalanceForRentExemption(
               openOrdersSpace,
-              'processed',
+              'confirmed',
             );
 
           const accInstr = await createAccountInstruction(
@@ -1802,7 +1869,7 @@ export class EntropyClient {
           const openOrdersLamports =
             await this.connection.getMinimumBalanceForRentExemption(
               openOrdersSpace,
-              'processed',
+              'confirmed',
             );
 
           const accInstr = await createAccountInstruction(
@@ -3369,7 +3436,7 @@ export class EntropyClient {
           const openOrdersLamports =
             await this.connection.getMinimumBalanceForRentExemption(
               openOrdersSpace,
-              'processed',
+              'confirmed',
             );
 
           const accInstr = await createAccountInstruction(

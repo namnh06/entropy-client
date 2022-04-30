@@ -77,7 +77,7 @@ const payerJsonFile = fs.readFileSync(
 );
 const payer = new Account(JSON.parse(payerJsonFile));
 const connection = new Connection(RPC_ENDPOINT, 'confirmed' as Commitment);
-const client = new EntropyClient(connection, entropyProgramId);
+const client = new EntropyClient(connection, entropyProgramId,  {timeout: 10000});
 
 export async function runKeeper(shouldRun = 0) {
   console.log('shouldRun: ', shouldRun);
