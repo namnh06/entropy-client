@@ -43,7 +43,7 @@ if (process.argv[3]) {
 else {
   keeperConfigRegistry = keeperConfigFile;
 }
-console.log(keeperConfigFile);
+console.log(keeperConfigRegistry);
 
 let lastRootBankCacheUpdate = 0;
 const groupName = process.env.GROUP || 'mainnet.2';
