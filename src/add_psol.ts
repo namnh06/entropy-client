@@ -28,7 +28,6 @@
 //   fs.writeFileSync(configPath, JSON.stringify(config.toJson(), null, 2));
 // }
 
-
 // async function examplePerp() {
 //   // setup client
 //   const config = new Config(configFile);
@@ -38,7 +37,7 @@
 //   ) as GroupConfig;
 //   const connection = new Connection(
 //     'https://api.devnet.solana.com',
-//     'processed' as Commitment,
+//     'confirmed' as Commitment,
 //   );
 //   const client = new EntropyClient(connection, groupConfig.entropyProgramId);
 //   const entropyGroup = await client.getEntropyGroup(groupConfig.publicKey);

@@ -1,12 +1,6 @@
 import fs from 'fs';
 import os from 'os';
-import {
-  Cluster,
-  Config,
-  QUOTE_INDEX,
-  AssetType,
-  I80F48,
-} from '../src';
+import { Cluster, Config, QUOTE_INDEX, AssetType, I80F48 } from '../src';
 import configFile from '../src/ids.json';
 import { Account, Commitment, Connection } from '@solana/web3.js';
 import { Market } from '@project-serum/serum';
@@ -21,12 +15,15 @@ async function testPerpLiquidationAndBankruptcy() {
   const payer = new Account(
     JSON.parse(
       process.env.KEYPAIR ||
-        fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+        fs.readFileSync(
+          os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+          'utf-8',
+        ),
     ),
   );
   const connection = new Connection(
     config.cluster_urls[cluster],
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
 
   const testGroup = new TestGroup();
@@ -56,14 +53,20 @@ async function testPerpLiquidationAndBankruptcy() {
     payer.publicKey,
   );
 
-  const liqorPk = await testGroup.client.initEntropyAccount(entropyGroup, payer);
+  const liqorPk = await testGroup.client.initEntropyAccount(
+    entropyGroup,
+    payer,
+  );
   const liqorAccount = await testGroup.client.getEntropyAccount(
     liqorPk,
     entropyGroup.dexProgramId,
   );
   console.log('Created Liqor:', liqorPk.toBase58());
 
-  const liqeePk = await testGroup.client.initEntropyAccount(entropyGroup, payer);
+  const liqeePk = await testGroup.client.initEntropyAccount(
+    entropyGroup,
+    payer,
+  );
   const liqeeAccount = await testGroup.client.getEntropyAccount(
     liqeePk,
     entropyGroup.dexProgramId,
@@ -217,7 +220,10 @@ async function testPerpLiquidationAndBankruptcy() {
       payer,
       1,
       I80F48.fromNumber(
-        Math.max(Math.abs(liqeeAccount.perpAccounts[1].quotePosition.toNumber()), 1),
+        Math.max(
+          Math.abs(liqeeAccount.perpAccounts[1].quotePosition.toNumber()),
+          1,
+        ),
       ),
     );
   }

@@ -69,7 +69,7 @@ export async function _sendTransaction(
 export function createDevnetConnection() {
   return new Connection(
     'https://api.devnet.solana.com',
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
 }
 
@@ -492,7 +492,11 @@ export async function addSpotMarketToEntropyGroup(
   marketIndex: number,
   initialPrice: number,
 ): Promise<void> {
-  const oraclePk = await createOracle(client.connection, EntropyProgramId, payer);
+  const oraclePk = await createOracle(
+    client.connection,
+    EntropyProgramId,
+    payer,
+  );
   await client.addOracle(entropyGroup, oraclePk, payer);
   await client.setOracle(
     entropyGroup,

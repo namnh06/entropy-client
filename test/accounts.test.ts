@@ -21,12 +21,15 @@ async function testAccounts() {
   const payer = new Account(
     JSON.parse(
       process.env.KEYPAIR ||
-        fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+        fs.readFileSync(
+          os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+          'utf-8',
+        ),
     ),
   );
   const connection = new Connection(
     config.cluster_urls[cluster],
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
 
   const client = new EntropyClient(connection, entropyProgramId);

@@ -48,7 +48,8 @@ async function mm() {
   const payer = new Account(
     JSON.parse(
       fs.readFileSync(
-        process.env.KEYPAIR || os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+        process.env.KEYPAIR ||
+          os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
         'utf-8',
       ),
     ),
@@ -57,7 +58,7 @@ async function mm() {
 
   const connection = new Connection(
     process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
   const client = new EntropyClient(connection, entropyProgramId);
 
@@ -150,7 +151,9 @@ async function mm() {
       // TODO store the prices in an array to calculate volatility
 
       // Model logic
-      const fairValue = entropyGroup.getPrice(marketIndex, entropyCache).toNumber();
+      const fairValue = entropyGroup
+        .getPrice(marketIndex, entropyCache)
+        .toNumber();
       const equity = entropyAccount
         .computeValue(entropyGroup, entropyCache)
         .toNumber();

@@ -21,7 +21,7 @@ import {
   Market,
 } from '@project-serum/serum';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import {processConsumeEvents} from './keeper'
+import { processConsumeEvents } from './keeper';
 
 require('dotenv').config({ path: '.env' });
 
@@ -42,13 +42,16 @@ const entropyGroupKey = groupIds.publicKey;
 const payer = new Account(
   JSON.parse(
     process.env.KEYPAIR ||
-      fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+      fs.readFileSync(
+        os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+        'utf-8',
+      ),
   ),
 );
 
 const connection = new Connection(
   process.argv[2] || process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
-  'processed' as Commitment,
+  'confirmed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);
 console.log(process.env.RPC_ENDPOINT);

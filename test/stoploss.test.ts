@@ -23,12 +23,15 @@ async function testStopLoss() {
   const payer = new Account(
     JSON.parse(
       process.env.KEYPAIR ||
-      fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+        fs.readFileSync(
+          os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+          'utf-8',
+        ),
     ),
   );
   const connection = new Connection(
     config.cluster_urls[cluster],
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
 
   const testGroup = new TestGroup();
@@ -48,7 +51,10 @@ async function testStopLoss() {
   }
   const quoteNodeBanks = await quoteRootBank.loadNodeBanks(connection);
 
-  const accountPk = await testGroup.client.initEntropyAccount(entropyGroup, payer);
+  const accountPk = await testGroup.client.initEntropyAccount(
+    entropyGroup,
+    payer,
+  );
   console.log('Created Account:', accountPk.toBase58());
   await sleep(sleepTime);
   const account = await testGroup.client.getEntropyAccount(
@@ -81,7 +87,10 @@ async function testStopLoss() {
 
   await testGroup.runKeeper();
 
-  const makerPk = await testGroup.client.initEntropyAccount(entropyGroup, payer);
+  const makerPk = await testGroup.client.initEntropyAccount(
+    entropyGroup,
+    payer,
+  );
   console.log('Created Maker:', accountPk.toBase58());
   await sleep(sleepTime);
   const maker = await testGroup.client.getEntropyAccount(
@@ -156,7 +165,7 @@ async function testStopLoss() {
     0.2276,
     'above',
     51000,
-    false
+    false,
   );
   console.log('add perp trigger order successful', txid.toString());
   const advanced = await account.loadAdvancedOrders(connection);
