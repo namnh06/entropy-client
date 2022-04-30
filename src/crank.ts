@@ -23,13 +23,13 @@ import {
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // const interval = process.env.INTERVAL || 3500;
-const interval = 4000; // TODO - stop sharing env var with Keeper
+const interval = 100; // TODO - stop sharing env var with Keeper
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
 const config = new Config(configFile);
 
-const cluster = (process.env.CLUSTER || 'devnet') as Cluster;
-const groupName = process.env.GROUP || 'devnet.1';
+const cluster = (process.env.CLUSTER || 'mainnet') as Cluster;
+const groupName = process.env.GROUP || 'mainnet.2';
 const groupIds = config.getGroup(cluster, groupName);
 
 if (!groupIds) {
