@@ -7,7 +7,7 @@ const config = Config.ids();
 const cluster = (process.env.CLUSTER || 'mainnet') as Cluster;
 const connection = new Connection(
   config.cluster_urls[cluster],
-  'confirmed' as Commitment,
+  'processed' as Commitment,
 );
 
 const groupName = process.env.GROUP || 'mainnet.2';

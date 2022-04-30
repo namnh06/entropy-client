@@ -69,7 +69,7 @@ export async function _sendTransaction(
 export function createDevnetConnection() {
   return new Connection(
     'https://api.devnet.solana.com',
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
 }
 

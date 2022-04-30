@@ -1,5 +1,6 @@
 import IDS from './ids.json';
 import IDL from './entropy_logs.json'
+import KeeperConfig from './exampleConfig.json';
 import EntropyAccount from './EntropyAccount';
 import EntropyGroup from './EntropyGroup';
 import PerpMarket from './PerpMarket';

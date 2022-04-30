@@ -21,15 +21,17 @@ import {
   Market,
 } from '@project-serum/serum';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {processConsumeEvents} from './keeper'
 
-// const interval = process.env.INTERVAL || 3500;
-const interval = 4000; // TODO - stop sharing env var with Keeper
+require('dotenv').config({ path: '.env' });
+
+const interval = 300; // TODO - stop sharing env var with Keeper
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
 const config = new Config(configFile);
 
-const cluster = (process.env.CLUSTER || 'devnet') as Cluster;
-const groupName = process.env.GROUP || 'devnet.1';
+const cluster = (process.env.CLUSTER || 'mainnet') as Cluster;
+const groupName = process.env.GROUP || 'mainnet.2';
 const groupIds = config.getGroup(cluster, groupName);
 
 if (!groupIds) {
@@ -45,112 +47,32 @@ const payer = new Account(
 );
 
 const connection = new Connection(
-  process.env.ENDPOINT_URL || config.cluster_urls[cluster],
-  'confirmed' as Commitment,
+  process.argv[2] || process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
+  'processed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);
-
+console.log(process.env.RPC_ENDPOINT);
 async function run() {
   if (!groupIds) {
     throw new Error(`Group ${groupName} not found`);
   }
   const entropyGroup = await client.getEntropyGroup(entropyGroupKey);
 
-  const spotMarkets = await Promise.all(
-    groupIds.spotMarkets.map((m) => {
-      return Market.load(
-        connection,
-        m.publicKey,
-        {
-          skipPreflight: true,
-          commitment: 'confirmed' as Commitment,
-        },
-        entropyGroup.dexProgramId,
-      );
-    }),
-  );
-
-  const quoteToken = new Token(
-    connection,
-    spotMarkets[0].quoteMintAddress,
-    TOKEN_PROGRAM_ID,
-    payer,
-  );
-  const quoteWallet = await quoteToken
-    .getOrCreateAssociatedAccountInfo(payer.publicKey)
-    .then((a) => a.address);
-
-  const baseWallets = await Promise.all(
-    spotMarkets.map((m) => {
-      const token = new Token(
-        connection,
-        m.baseMintAddress,
-        TOKEN_PROGRAM_ID,
-        payer,
-      );
-
-      return token
-        .getOrCreateAssociatedAccountInfo(payer.publicKey)
-        .then((a) => a.address);
-    }),
-  );
-
-  const eventQueuePks = spotMarkets.map(
-    (market) => market['_decoded'].eventQueue,
-  );
-
-  // eslint-disable-next-line
-  while (true) {
-    const eventQueueAccts = await getMultipleAccounts(
-      connection,
-      eventQueuePks,
-    );
-    for (let i = 0; i < eventQueueAccts.length; i++) {
-      const accountInfo = eventQueueAccts[i].accountInfo;
-      const events = decodeEventQueue(accountInfo.data);
-
-      if (events.length === 0) {
-        continue;
-      }
-
-      const accounts: Set<string> = new Set();
-      for (const event of events) {
-        accounts.add(event.openOrders.toBase58());
-
-        // Limit unique accounts to first 10
-        if (accounts.size >= maxUniqueAccounts) {
-          break;
-        }
-      }
-
-      const openOrdersAccounts = [...accounts]
-        .map((s) => new PublicKey(s))
-        .sort((a, b) => a.toBuffer().swap64().compare(b.toBuffer().swap64()));
-
-      const instr = DexInstructions.consumeEvents({
-        market: spotMarkets[i].publicKey,
-        eventQueue: spotMarkets[i]['_decoded'].eventQueue,
-        coinFee: baseWallets[i],
-        pcFee: quoteWallet,
-        openOrdersAccounts,
-        limit: consumeEventsLimit,
-        programId: entropyGroup.dexProgramId,
-      });
-
-      const transaction = new Transaction();
-      transaction.add(instr);
-
-      console.log(
-        'market',
-        i,
-        'sending consume events for',
-        events.length,
-        'events',
-      );
-      await client.sendTransaction(transaction, payer, []);
-    }
-    await sleep(interval);
+  if (!groupIds) {
+    throw new Error(`Group ${groupName} not found`);
   }
+  const perpMarkets = await Promise.all(
+    groupIds.perpMarkets.map((m) => {
+      return entropyGroup.loadPerpMarket(
+        connection,
+        m.marketIndex,
+        m.baseDecimals,
+        m.quoteDecimals,
+      );
+    }),
+  );
+
+  processConsumeEvents(entropyGroup, perpMarkets, interval);
 }
 
 run();
