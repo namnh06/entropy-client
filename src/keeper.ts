@@ -13,6 +13,7 @@ import {
 } from '@solana/web3.js';
 import { getMultipleAccounts, zeroKey } from './utils';
 import configFile from './ids.json';
+import keeperConfigFile from './exampleConfig.json';
 import { Cluster, Config } from './config';
 import {
   makeCachePerpMarketsInstruction,
@@ -30,28 +31,22 @@ import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import { Options, PositionalOptions } from 'yargs';
 import { should } from 'chai';
-
 require('dotenv').config({ path: '.env' });
+
+console.log(process.argv);
+
+let keeperConfigRegistry;
+if (process.argv[3]) {
+  let keeperConfigRaw = fs.readFileSync(process.argv[3]);
+  keeperConfigRegistry = JSON.parse(keeperConfigRaw.toString());
+}
+else {
+  keeperConfigRegistry = keeperConfigFile;
+}
+console.log(keeperConfigFile);
 
 let lastRootBankCacheUpdate = 0;
 const groupName = process.env.GROUP || 'mainnet.2';
-const updateCacheInterval = parseInt(
-  process.argv[4] || process.env.UPDATE_CACHE_INTERVAL || '10000',
-);
-const updateRootBankCacheInterval = parseInt(
-  process.argv[5] || process.env.UPDATE_ROOT_BANK_CACHE_INTERVAL || '10000',
-);
-const processKeeperInterval = parseInt(
-  process.argv[6] || process.env.PROCESS_KEEPER_INTERVAL || '20000',
-);
-const consumeEventsInterval = parseInt(
-  process.argv[7] || process.env.CONSUME_EVENTS_INTERVAL || '3000',
-);
-const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
-const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
-const consumeEvents = process.env.CONSUME_EVENTS
-  ? process.env.CONSUME_EVENTS === 'true'
-  : true;
 const cluster = (process.env.CLUSTER || 'mainnet') as Cluster;
 const config = new Config(configFile);
 const groupIds = config.getGroup(cluster, groupName);
@@ -59,8 +54,28 @@ const groupIds = config.getGroup(cluster, groupName);
 if (!groupIds) {
   throw new Error(`Group ${groupName} not found`);
 }
+let keeperConfigName = process.argv[4] || "serum";
+let keeperConfig = keeperConfigRegistry.find(x => x.name == keeperConfigName);
+const RPC_ENDPOINT = (keeperConfig.rpc_endpoint || config.cluster_urls[cluster])
+console.log("RPC_ENDPOINT USED", RPC_ENDPOINT);
+
+const updateCacheInterval = parseInt(
+  keeperConfig.update_cache_interval,
+);
+const updateRootBankCacheInterval = parseInt(
+  keeperConfig.update_root_bank_cache_interval,
+);
+const processKeeperInterval = parseInt(
+  keeperConfig.process_keeper_interval,
+);
+const consumeEventsInterval = parseInt(
+  keeperConfig.consume_events_interval,
+);
+const maxUniqueAccounts = parseInt(keeperConfig.max_unique_accounts);
+const consumeEventsLimit = new BN(keeperConfig.consume_events_limit);
+const consumeEvents = true;
+
 const entropyProgramId = groupIds.entropyProgramId;
-console.log("PROGRAM ID: ", entropyProgramId.toString())
 const entropyGroupKey = groupIds.publicKey;
 const payerJsonFile =  fs.readFileSync(process.env.KEYPAIR || (os.homedir() + '/.config/solana/entropy-mainnet-authority.json'), 'utf-8');
 const payer = new Account(
@@ -68,8 +83,6 @@ const payer = new Account(
     payerJsonFile
   ),
 );
-const RPC_ENDPOINT = (process.argv[3] || process.env.RPC_ENDPOINT || config.cluster_urls[cluster])
-console.log("RPC_ENDPOINT USED", RPC_ENDPOINT);
 const connection = new Connection(
   RPC_ENDPOINT,
   'processed' as Commitment,

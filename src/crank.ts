@@ -25,9 +25,7 @@ import {processConsumeEvents} from './keeper'
 
 require('dotenv').config({ path: '.env' });
 
-
-// const interval = process.env.INTERVAL || 3500;
-const interval = process.argv[3] || 1000; // TODO - stop sharing env var with Keeper
+const interval = 300; // TODO - stop sharing env var with Keeper
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
 const config = new Config(configFile);
@@ -74,7 +72,7 @@ async function run() {
     }),
   );
 
-  processConsumeEvents(entropyGroup, perpMarkets, 100);
+  processConsumeEvents(entropyGroup, perpMarkets, interval);
 }
 
 run();
