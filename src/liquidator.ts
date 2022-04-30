@@ -81,7 +81,7 @@ const payer = new Account(
 );
 console.log(`Payer: ${payer.publicKey.toBase58()}`);
 const rpcEndpoint = process.env.RPC_ENDPOINT || config.cluster_urls[cluster];
-const connection = new Connection(rpcEndpoint, 'confirmed' as Commitment);
+const connection = new Connection(rpcEndpoint, 'processed' as Commitment);
 const client = new EntropyClient(connection, entropyProgramId);
 
 let entropySubscriptionId = -1;

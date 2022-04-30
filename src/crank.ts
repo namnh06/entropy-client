@@ -27,7 +27,7 @@ require('dotenv').config({ path: '.env' });
 
 
 // const interval = process.env.INTERVAL || 3500;
-const interval = 100; // TODO - stop sharing env var with Keeper
+const interval = process.argv[3] || 1000; // TODO - stop sharing env var with Keeper
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
 const config = new Config(configFile);
@@ -49,8 +49,8 @@ const payer = new Account(
 );
 
 const connection = new Connection(
-  process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
-  'confirmed' as Commitment,
+  process.argv[2] || process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
+  'processed' as Commitment,
 );
 const client = new EntropyClient(connection, entropyProgramId);
 console.log(process.env.RPC_ENDPOINT);

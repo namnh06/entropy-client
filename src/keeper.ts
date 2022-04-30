@@ -36,16 +36,16 @@ require('dotenv').config({ path: '.env' });
 let lastRootBankCacheUpdate = 0;
 const groupName = process.env.GROUP || 'mainnet.2';
 const updateCacheInterval = parseInt(
-  process.env.UPDATE_CACHE_INTERVAL || '10000',
+  process.argv[4] || process.env.UPDATE_CACHE_INTERVAL || '10000',
 );
 const updateRootBankCacheInterval = parseInt(
-  process.env.UPDATE_ROOT_BANK_CACHE_INTERVAL || '10000',
+  process.argv[5] || process.env.UPDATE_ROOT_BANK_CACHE_INTERVAL || '10000',
 );
 const processKeeperInterval = parseInt(
-  process.env.PROCESS_KEEPER_INTERVAL || '20000',
+  process.argv[6] || process.env.PROCESS_KEEPER_INTERVAL || '20000',
 );
 const consumeEventsInterval = parseInt(
-  process.env.CONSUME_EVENTS_INTERVAL || '3000',
+  process.argv[7] || process.env.CONSUME_EVENTS_INTERVAL || '3000',
 );
 const maxUniqueAccounts = parseInt(process.env.MAX_UNIQUE_ACCOUNTS || '10');
 const consumeEventsLimit = new BN(process.env.CONSUME_EVENTS_LIMIT || '10');
@@ -68,13 +68,12 @@ const payer = new Account(
     payerJsonFile
   ),
 );
-const RPC_ENDPOINT = (process.env.RPC_ENDPOINT || config.cluster_urls[cluster])
+const RPC_ENDPOINT = (process.argv[3] || process.env.RPC_ENDPOINT || config.cluster_urls[cluster])
 console.log("RPC_ENDPOINT USED", RPC_ENDPOINT);
 const connection = new Connection(
   RPC_ENDPOINT,
-  'confirmed' as Commitment,
+  'processed' as Commitment,
 );
-console.log("DEVNET RPC: ", process.env.DEVNET_RPC_ENDPOINT)
 const client = new EntropyClient(connection, entropyProgramId);
 
 export async function runKeeper(shouldRun=0) {

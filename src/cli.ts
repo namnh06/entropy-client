@@ -73,7 +73,7 @@ const symbolDesc: [string, PositionalOptions] = [
 export function openConnection(config: Config, cluster: Cluster) {
   return new Connection(
     config.cluster_urls[cluster],
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
 }
 

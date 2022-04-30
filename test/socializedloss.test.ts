@@ -37,7 +37,7 @@ async function testSocializedLoss() {
   );
   const connection = new Connection(
     config.cluster_urls[cluster],
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
 
   const client = new EntropyClient(connection, entropyProgramId);

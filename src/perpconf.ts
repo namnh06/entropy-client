@@ -14,7 +14,7 @@ async function main() {
   const entropyGroupKey = groupIds.publicKey;
   const connection = new Connection(
     process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
-    'confirmed' as Commitment,
+    'processed' as Commitment,
   );
   const client = new EntropyClient(connection, entropyProgramId);
   const group = await client.getEntropyGroup(entropyGroupKey);
