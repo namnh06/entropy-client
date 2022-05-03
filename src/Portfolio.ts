@@ -30,7 +30,7 @@ async function getSharePrice(globalId: string) {
 
 async function getUnderlyingPrice(globalId: string) {
     const query = await fetch(
-            `https://friktion-labs.github.io/mainnet-tvl-snapshots/derived_timeseries/${globalId}_pricesByCoingeckoId.json`
+            `https://friktion-labs.github.io/mainnet-tvl-snapshots/derived_timeseries/serum_pricesByCoingeckoId.json`
         ).then((res) => res.json());
 
     return query;
@@ -115,6 +115,7 @@ async function calculatePortfolioValue(globalId: string, userAddress: string) {
         }
         // Process Underlying Price Change
         else if (underlyingPrice && underlyingPrice.UnixTime == oldestTime) {
+            //TODO: for puts, need to use always an underlying value of 1.
             const underlyingTokenHoldings = activeVaultTokenPosition*lastSharePriceValue+pendingDeposits+pendingClaims;
             if (underlyingTokenHoldings > 0) {
                 let usdcValue = (underlyingTokenHoldings) * underlyingPrice.Value;
@@ -167,8 +168,9 @@ async function calculatePortfolioValue(globalId: string, userAddress: string) {
             console.log(err);
         }
     });
+    console.log(USDCPortfolio);
     return [tokenPortfolio, USDCPortfolio];
 }
 
-calculatePortfolioValue("mainnet_income_call_ftt", "DcRQUi3X9Krtqn3b5muCBt8VfUsGyj8jjr6ajbseZ2f9");
+calculatePortfolioValue("mainnet_income_call_srm", "EcH12jxhrbhF6qHqRzWpZ8rZU3TjG3sX6F67zP61oDJG");
 
