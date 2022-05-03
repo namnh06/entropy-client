@@ -304,7 +304,7 @@ export class EntropyClient {
       while (!done && getUnixTs() - startTime < timeout / 1000) {
         retryCount += 1;
         await sleep(retrySleep);
-        console.log(new Date().toISOString(), `retry number: `, retryCount, `Retrying tx `, txid, );
+        // console.log(new Date().toISOString(), `retry number: `, retryCount, `Retrying tx `, txid, );
         this.connection.sendRawTransaction(rawTransaction, {
           skipPreflight: true,
         });
