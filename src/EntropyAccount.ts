@@ -965,7 +965,7 @@ export default class EntropyAccount {
     }
 
     lines.push('Perps:');
-    lines.push('Market: Base Pos / Quote Pos / Unsettled Funding / Health');
+    lines.push('Market: Base Pos / Quote Pos (* base) / Quote Pos (full) / Unsettled Funding / Health / Oracle Px');
 
     for (let i = 0; i < this.perpAccounts.length; i++) {
       if (entropyGroup.perpMarkets[i].perpMarket.equals(zeroKey)) {
@@ -984,7 +984,10 @@ export default class EntropyAccount {
         `${market.name}: ${this.getBasePositionUiWithGroup(
           i,
           entropyGroup,
-        ).toFixed(4)} / ${(
+        ).toFixed(4)} / ${market.name}: ${I80F48.fromNumber(this.getBasePositionUiWithGroup(
+          i,
+          entropyGroup,
+        )).mul(cache.priceCache[i].price).toFixed(4)} / ${(
           perpAccount.getQuotePosition(cache.perpMarketCache[i]).toNumber() /
           quoteAdj.toNumber()
         ).toFixed(4)} / ${(
@@ -999,7 +1002,7 @@ export default class EntropyAccount {
             cache.perpMarketCache[i].longFunding,
             cache.perpMarketCache[i].shortFunding,
           )
-          .toFixed(4)}`,
+          .toFixed(4)} / ${cache.priceCache[i].price.toFixed(4)}`,
       );
     }
     return lines.join(EOL);
