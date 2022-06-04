@@ -12,7 +12,10 @@ import { addSwitchboardOracle, addPerpMarket } from './commands';
 function readKeypair() {
   return JSON.parse(
     process.env.KEYPAIR ||
-      fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+      fs.readFileSync(
+        os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+        'utf-8',
+      ),
   );
 }
 
@@ -26,13 +29,10 @@ function readKeypair_opp() {
 async function examplePerp() {
   // setup client
   const config = new Config(configFile);
-  const groupConfig = config.getGroup(
-    'devnet',
-    'devnet.2',
-  ) as GroupConfig;
+  const groupConfig = config.getGroup('devnet', 'devnet.2') as GroupConfig;
   const connection = new Connection(
     'https://api.devnet.solana.com',
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
   const client = new EntropyClient(connection, groupConfig.entropyProgramId);
   const entropyGroup = await client.getEntropyGroup(groupConfig.publicKey);
@@ -77,7 +77,6 @@ async function examplePerp() {
     0.1,
     'limit',
   ); // or 'ioc' or 'postOnly'
-
 
   await client.placePerpOrder(
     entropyGroup,

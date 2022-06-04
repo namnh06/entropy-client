@@ -73,7 +73,7 @@ const symbolDesc: [string, PositionalOptions] = [
 export function openConnection(config: Config, cluster: Cluster) {
   return new Connection(
     config.cluster_urls[cluster],
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
 }
 
@@ -264,7 +264,6 @@ yargs(hideBin(process.argv)).command(
   },
 ).argv;
 
-
 yargs(hideBin(process.argv)).command(
   'change-max-accounts <group> <symbol> <value>',
   'set stub oracle to given value',
@@ -290,7 +289,7 @@ yargs(hideBin(process.argv)).command(
       connection,
       account,
       group,
-      new BN(args.value as string)
+      new BN(args.value as string),
     );
     process.exit(0);
   },
@@ -366,7 +365,7 @@ yargs(hideBin(process.argv)).command(
     const account = readKeypair(args.keypair as string);
     const config = readConfig(args.config as string);
     const cluster = args.cluster as Cluster;
-    console.log("cluster: ", cluster);
+    console.log('cluster: ', cluster);
     const connection = openConnection(config, cluster);
     const group = config.getGroup(cluster, args.group as string) as GroupConfig;
     const result = await addPerpMarket(
@@ -457,7 +456,7 @@ yargs(hideBin(process.argv)).command(
     const account = readKeypair(args.keypair as string);
     const config = readConfig(args.config as string);
     const cluster = args.cluster as Cluster;
-    console.log("cluster: ", cluster);
+    console.log('cluster: ', cluster);
     // console.log()
     const connection = openConnection(config, cluster);
     const group = config.getGroup(cluster, args.group as string) as GroupConfig;
@@ -543,7 +542,9 @@ yargs(hideBin(process.argv)).command(
       groupConfig.serumProgramId,
     );
     const cache = await entropyGroup.loadCache(connection);
-    console.log(entropyAccount.toPrettyString(groupConfig, entropyGroup, cache));
+    console.log(
+      entropyAccount.toPrettyString(groupConfig, entropyGroup, cache),
+    );
     process.exit(0);
   },
 ).argv;
@@ -579,7 +580,9 @@ yargs(hideBin(process.argv)).command(
 
     const cache = await entropyGroup.loadCache(connection);
     for (const entropyAccount of entropyAccounts) {
-      console.log(entropyAccount.toPrettyString(groupConfig, entropyGroup, cache));
+      console.log(
+        entropyAccount.toPrettyString(groupConfig, entropyGroup, cache),
+      );
     }
 
     process.exit(0);
@@ -979,7 +982,7 @@ yargs(hideBin(process.argv)).command(
       mngoPerPeriod,
       exp,
       version,
-      lmSizeShift
+      lmSizeShift,
     );
     // await sleep(2000);
     // perpMarket = await client.getPerpMarket(

@@ -39,6 +39,8 @@ import {
 import PerpMarket from './PerpMarket';
 import { Order } from '@project-serum/serum/lib/market';
 
+export type HealthType = 'Init' | 'Maint' | 'Equity';
+
 export default class EntropyAccount {
   publicKey: PublicKey;
   metaData!: MetaData;
@@ -965,7 +967,7 @@ export default class EntropyAccount {
     }
 
     lines.push('Perps:');
-    lines.push('Market: Base Pos / Quote Pos / Unsettled Funding / Health');
+    lines.push('Market: Base Pos / Quote Pos (* base) / Quote Pos (full) / Unsettled Funding / Health / Oracle Px');
 
     for (let i = 0; i < this.perpAccounts.length; i++) {
       if (entropyGroup.perpMarkets[i].perpMarket.equals(zeroKey)) {
@@ -978,13 +980,24 @@ export default class EntropyAccount {
       if (market === undefined) {
         continue;
       }
+      const normFactor = I80F48.fromNumber(
+        Math.pow(
+          10,
+          entropyGroup.tokens[i].decimals -
+            entropyGroup.tokens[QUOTE_INDEX].decimals,
+        ),
+      )
       const perpAccount = this.perpAccounts[i];
       const perpMarketInfo = entropyGroup.perpMarkets[i];
       lines.push(
         `${market.name}: ${this.getBasePositionUiWithGroup(
           i,
           entropyGroup,
-        ).toFixed(4)} / ${(
+        ).toFixed(4)} / ${market.name}: ${I80F48.fromNumber(this.getBasePositionUiWithGroup(
+          i,
+          entropyGroup,
+        )).mul(normFactor).mul(cache.priceCache[i].price
+          ).toFixed(4)} / ${(
           perpAccount.getQuotePosition(cache.perpMarketCache[i]).toNumber() /
           quoteAdj.toNumber()
         ).toFixed(4)} / ${(
@@ -999,7 +1012,8 @@ export default class EntropyAccount {
             cache.perpMarketCache[i].longFunding,
             cache.perpMarketCache[i].shortFunding,
           )
-          .toFixed(4)}`,
+          .toFixed(4)} / ${     normFactor.mul(cache.priceCache[i].price)
+                                .toFixed(4)}`,
       );
     }
     return lines.join(EOL);
@@ -1044,6 +1058,7 @@ export default class EntropyAccount {
   getPerpPositionUi(marketIndex: number, perpMarket: PerpMarket): number {
     return this.perpAccounts[marketIndex].getBasePositionUi(perpMarket);
   }
+
   /**
    *  Return the current position for the market at `marketIndex` in UI units
    *  e.g. if you buy 1 BTC in the UI, you're buying 1,000,000 native BTC,
@@ -1078,5 +1093,3 @@ export default class EntropyAccount {
     );
   }
 }
-
-export type HealthType = 'Init' | 'Maint';

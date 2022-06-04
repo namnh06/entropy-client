@@ -1,15 +1,12 @@
 import { EntropyClient } from './client';
-import {
-  Commitment,
-  Connection
-} from '@solana/web3.js';
+import { Commitment, Connection } from '@solana/web3.js';
 import { sleep } from './utils';
 import configFile from './ids.json';
 import {
   Cluster,
   Config,
   getPerpMarketByBaseSymbol,
-  PerpMarketConfig
+  PerpMarketConfig,
 } from './config';
 import { ONE_BN, ZERO_BN } from '.';
 
@@ -37,7 +34,7 @@ export class Fetcher {
 
     const connection = new Connection(
       process.env.RPC_ENDPOINT || config.cluster_urls[cluster],
-      'processed' as Commitment,
+      'confirmed' as Commitment,
     );
     const client = new EntropyClient(connection, entropyProgramId);
     const entropyGroup = await client.getEntropyGroup(entropyGroupKey);

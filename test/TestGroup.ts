@@ -151,7 +151,7 @@ export default class TestGroup {
     );
     this.connection = new Connection(
       config.cluster_urls[cluster],
-      'processed' as Commitment,
+      'confirmed' as Commitment,
     );
 
     this.client = new EntropyClient(this.connection, this.entropyProgramId);
@@ -160,7 +160,7 @@ export default class TestGroup {
   async init(): Promise<PublicKey> {
     console.log('Creating Entropy Group...');
     if (!this.log) {
-      console.log = function () { };
+      console.log = function () {};
     }
 
     this.entropyGroupKey = await this.client.initEntropyGroup(
@@ -185,7 +185,9 @@ export default class TestGroup {
       console.log(`adding ${fids.symbol} oracle`);
       if (fids.price) {
         await this.client.addStubOracle(this.entropyGroupKey, this.payer);
-        const tempGroup = await this.client.getEntropyGroup(this.entropyGroupKey);
+        const tempGroup = await this.client.getEntropyGroup(
+          this.entropyGroupKey,
+        );
         this.oraclePks.push(new PublicKey(tempGroup.oracles[i]));
         await this.client.setStubOracle(
           this.entropyGroupKey,
@@ -263,7 +265,8 @@ export default class TestGroup {
       console.log = this.logger;
     }
     console.log(
-      'Succcessfully created new Entropy Group ' + this.entropyGroupKey.toBase58(),
+      'Succcessfully created new Entropy Group ' +
+        this.entropyGroupKey.toBase58(),
     );
 
     return this.entropyGroupKey;
@@ -272,7 +275,7 @@ export default class TestGroup {
   async runKeeper() {
     console.log('runKeeper');
     if (!this.log) {
-      console.log = function () { };
+      console.log = function () {};
     }
     await this.updateCache();
     await this.updateBanksAndMarkets();
@@ -286,7 +289,9 @@ export default class TestGroup {
   async updateBanksAndMarkets() {
     console.log('processKeeperTransactions');
     const promises: Promise<string>[] = [];
-    const entropyGroup = await this.client.getEntropyGroup(this.entropyGroupKey);
+    const entropyGroup = await this.client.getEntropyGroup(
+      this.entropyGroupKey,
+    );
     const perpMarkets = await Promise.all(
       [1, 3].map((marketIndex) => {
         return entropyGroup.loadPerpMarket(this.connection, marketIndex, 6, 6);
@@ -341,7 +346,9 @@ export default class TestGroup {
 
   async consumeEvents() {
     console.log('processConsumeEvents');
-    const entropyGroup = await this.client.getEntropyGroup(this.entropyGroupKey);
+    const entropyGroup = await this.client.getEntropyGroup(
+      this.entropyGroupKey,
+    );
     const perpMarkets = await Promise.all(
       [1, 3].map((marketIndex) => {
         return entropyGroup.loadPerpMarket(this.connection, marketIndex, 6, 6);
@@ -408,7 +415,9 @@ export default class TestGroup {
     console.log('processUpdateCache');
     const batchSize = 8;
     const promises: Promise<string>[] = [];
-    const entropyGroup = await this.client.getEntropyGroup(this.entropyGroupKey);
+    const entropyGroup = await this.client.getEntropyGroup(
+      this.entropyGroupKey,
+    );
     const rootBanks = entropyGroup.tokens
       .map((t) => t.rootBank)
       .filter((t) => !t.equals(zeroKey));

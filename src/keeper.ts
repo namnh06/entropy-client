@@ -39,8 +39,7 @@ let keeperConfigRegistry;
 if (process.argv[3]) {
   let keeperConfigRaw = fs.readFileSync(process.argv[3]);
   keeperConfigRegistry = JSON.parse(keeperConfigRaw.toString());
-}
-else {
+} else {
   keeperConfigRegistry = keeperConfigFile;
 }
 console.log(keeperConfigRegistry);
@@ -54,43 +53,34 @@ const groupIds = config.getGroup(cluster, groupName);
 if (!groupIds) {
   throw new Error(`Group ${groupName} not found`);
 }
-let keeperConfigName = process.argv[4] || "serum";
-let keeperConfig = keeperConfigRegistry.find(x => x.name == keeperConfigName);
-const RPC_ENDPOINT = (keeperConfig.rpc_endpoint || config.cluster_urls[cluster])
-console.log("RPC_ENDPOINT USED", RPC_ENDPOINT);
+let keeperConfigName = process.argv[4] || 'serum';
+let keeperConfig = keeperConfigRegistry.find((x) => x.name == keeperConfigName);
+const RPC_ENDPOINT = keeperConfig.rpc_endpoint || config.cluster_urls[cluster];
+console.log('RPC_ENDPOINT USED', RPC_ENDPOINT);
 
-const updateCacheInterval = parseInt(
-  keeperConfig.update_cache_interval,
-);
+const updateCacheInterval = parseInt(keeperConfig.update_cache_interval);
 const updateRootBankCacheInterval = parseInt(
   keeperConfig.update_root_bank_cache_interval,
 );
-const processKeeperInterval = parseInt(
-  keeperConfig.process_keeper_interval,
-);
-const consumeEventsInterval = parseInt(
-  keeperConfig.consume_events_interval,
-);
+const processKeeperInterval = parseInt(keeperConfig.process_keeper_interval);
+const consumeEventsInterval = parseInt(keeperConfig.consume_events_interval);
 const maxUniqueAccounts = parseInt(keeperConfig.max_unique_accounts);
 const consumeEventsLimit = new BN(keeperConfig.consume_events_limit);
 const consumeEvents = true;
 
 const entropyProgramId = groupIds.entropyProgramId;
 const entropyGroupKey = groupIds.publicKey;
-const payerJsonFile =  fs.readFileSync(process.env.KEYPAIR || (os.homedir() + '/.config/solana/entropy-mainnet-authority.json'), 'utf-8');
-const payer = new Account(
-  JSON.parse(
-    payerJsonFile
-  ),
+const payerJsonFile = fs.readFileSync(
+  process.env.KEYPAIR ||
+    os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+  'utf-8',
 );
-const connection = new Connection(
-  RPC_ENDPOINT,
-  'processed' as Commitment,
-);
-const client = new EntropyClient(connection, entropyProgramId);
+const payer = new Account(JSON.parse(payerJsonFile));
+const connection = new Connection(RPC_ENDPOINT, 'confirmed' as Commitment);
+const client = new EntropyClient(connection, entropyProgramId,  {timeout: 10000});
 
-export async function runKeeper(shouldRun=0) {
-  console.log("shouldRun: ", shouldRun);
+export async function runKeeper(shouldRun = 0) {
+  console.log('shouldRun: ', shouldRun);
   if (shouldRun != 1) {
     return;
   }
@@ -194,7 +184,6 @@ async function processUpdateCache(entropyGroup: EntropyGroup) {
     Promise.all(promises).catch((err) => {
       console.error('Error updating cache', err);
     });
-
   } finally {
     console.time('processUpdateCache');
     setTimeout(processUpdateCache, updateCacheInterval, entropyGroup);
@@ -204,7 +193,7 @@ async function processUpdateCache(entropyGroup: EntropyGroup) {
 export async function processConsumeEvents(
   entropyGroup: EntropyGroup,
   perpMarkets: PerpMarket[],
-  customInterval: number=consumeEventsInterval
+  customInterval: number = consumeEventsInterval,
 ) {
   try {
     const eventQueuePks = perpMarkets.map((mkt) => mkt.eventQueue);
@@ -279,12 +268,7 @@ export async function processConsumeEvents(
 
     Promise.all(promises);
   } finally {
-    setTimeout(
-      processConsumeEvents,
-      customInterval,
-      entropyGroup,
-      perpMarkets,
-    );
+    setTimeout(processConsumeEvents, customInterval, entropyGroup, perpMarkets);
   }
 }
 
@@ -369,7 +353,7 @@ yargs(hideBin(process.argv)).command(
     return;
   },
   async (args) => {
-    console.log("Running keeper via args");
+    console.log('Running keeper via args');
     runKeeper(1);
   },
 ).argv;

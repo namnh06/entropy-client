@@ -11,7 +11,10 @@ import EntropyGroup from './EntropyGroup';
 function readKeypair() {
   return JSON.parse(
     process.env.KEYPAIR ||
-      fs.readFileSync(os.homedir() + '/.config/solana/entropy-mainnet-authority.json', 'utf-8'),
+      fs.readFileSync(
+        os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+        'utf-8',
+      ),
   );
 }
 
@@ -25,13 +28,10 @@ function readKeypair_opp() {
 async function checkPrice() {
   // setup client
   const config = new Config(configFile);
-  const groupConfig = config.getGroup(
-    'devnet',
-    'devnet.2',
-  ) as GroupConfig;
+  const groupConfig = config.getGroup('devnet', 'devnet.2') as GroupConfig;
   const connection = new Connection(
     'https://api.devnet.solana.com',
-    'processed' as Commitment,
+    'confirmed' as Commitment,
   );
   const client = new EntropyClient(connection, groupConfig.entropyProgramId);
   const entropyGroup = await client.getEntropyGroup(groupConfig.publicKey);
@@ -56,8 +56,11 @@ async function checkPrice() {
     perpMarketConfig.quoteDecimals,
   );
 
-  console.log("INDEX: ",perpMarketConfig.marketIndex);
-  console.log("MARKET INFO: ", perpMarket.toPrettyString(entropyGroup, perpMarketConfig));
+  console.log('INDEX: ', perpMarketConfig.marketIndex);
+  console.log(
+    'MARKET INFO: ',
+    perpMarket.toPrettyString(entropyGroup, perpMarketConfig),
+  );
   // Fetch orderbooks
   const bids = await perpMarket.loadBids(connection);
   const asks = await perpMarket.loadAsks(connection);
@@ -65,19 +68,39 @@ async function checkPrice() {
   // Load Cache
   const entropyCache = await entropyGroup.loadCache(connection);
 
-  console.log("CACHE SHIT: ", entropyCache.priceCache[7].lastUpdate.toString());
+  console.log('CACHE SHIT: ', entropyCache.priceCache[7].lastUpdate.toString());
 
   // Load funding rate
-  const funding_rate = await perpMarket.getCurrentFundingRate(entropyGroup, entropyCache, perpMarketConfig.marketIndex, bids, asks);
-  console.log("FUNDING RATE: ", funding_rate.toString());
+  const funding_rate = await perpMarket.getCurrentFundingRate(
+    entropyGroup,
+    entropyCache,
+    perpMarketConfig.marketIndex,
+    bids,
+    asks,
+  );
+  console.log('FUNDING RATE: ', funding_rate.toString());
 
   // Load price
-  console.log("DECIMALS: ", entropyGroup.getTokenDecimals(perpMarketConfig.marketIndex));
-  console.log("RAW PRICE: ", entropyCache.priceCache[perpMarketConfig.marketIndex].price.toString())
-  console.log("UI PRICE: ", entropyGroup.getPriceUi(perpMarketConfig.marketIndex, entropyCache).toString());
-  const price = entropyCache.priceCache[perpMarketConfig.marketIndex].price
-  console.log("CACHE TO UI PRICE: ", entropyGroup.cachePriceToUi(price, perpMarketConfig.marketIndex))
+  console.log(
+    'DECIMALS: ',
+    entropyGroup.getTokenDecimals(perpMarketConfig.marketIndex),
+  );
+  console.log(
+    'RAW PRICE: ',
+    entropyCache.priceCache[perpMarketConfig.marketIndex].price.toString(),
+  );
+  console.log(
+    'UI PRICE: ',
+    entropyGroup
+      .getPriceUi(perpMarketConfig.marketIndex, entropyCache)
+      .toString(),
+  );
+  const price = entropyCache.priceCache[perpMarketConfig.marketIndex].price;
+  console.log(
+    'CACHE TO UI PRICE: ',
+    entropyGroup.cachePriceToUi(price, perpMarketConfig.marketIndex),
+  );
   // console.log('prices = ', entropyCache.priceCache);
-  }
+}
 
 checkPrice();

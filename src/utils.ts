@@ -162,7 +162,7 @@ export async function awaitTransactionSignatureConfirmation(
               resolve(result);
             }
           },
-          'processed',
+          'confirmed',
         );
         // console.log('Set up WS connection', txid);
       } catch (e) {
@@ -231,7 +231,7 @@ export async function simulateTransaction(
   // @ts-ignore
   const wireTransaction = transaction._serialize(signData);
   const encodedTransaction = wireTransaction.toString('base64');
-  const config: any = { encoding: 'base64', commitment };
+  const config: any = { encoding: 'base64', commitment:commitment , replaceRecentBlockhash: true};
   const args = [encodedTransaction, config];
 
   // @ts-ignore
@@ -378,7 +378,7 @@ export async function getMultipleAccounts(
       getMultipleAccounts(connection, publicKeys.slice(mid, len), commitment),
     ]).then((a) => a[0].concat(a[1]));
   }
-  
+
   const publicKeyStrs = publicKeys.map((pk) => pk.toBase58());
   // load connection commitment as a default
   commitment ||= connection.commitment;
@@ -389,7 +389,7 @@ export async function getMultipleAccounts(
   if (resp.error) {
     throw new Error(resp.error.message);
   }
-  
+
   return resp.result.value.map(
     ({ data, executable, lamports, owner }, i: number) => ({
       publicKey: publicKeys[i],

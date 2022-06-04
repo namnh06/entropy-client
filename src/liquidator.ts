@@ -64,7 +64,10 @@ if (!groupIds) {
 //         MNGO BTC ETH SOL USDT SRM RAY COPE FTT MSOL
 // TARGETS=0    0   0   1   0    0   0   0    0   0
 const TARGETS = process.env.TARGETS
-  ? process.env.TARGETS.replace(/\s+/g,' ').trim().split(' ').map((s) => parseFloat(s))
+  ? process.env.TARGETS.replace(/\s+/g, ' ')
+      .trim()
+      .split(' ')
+      .map((s) => parseFloat(s))
   : [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const entropyProgramId = groupIds.entropyProgramId;
@@ -74,14 +77,15 @@ const payer = new Account(
   JSON.parse(
     process.env.PRIVATE_KEY ||
       fs.readFileSync(
-        process.env.KEYPAIR || os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
+        process.env.KEYPAIR ||
+          os.homedir() + '/.config/solana/entropy-mainnet-authority.json',
         'utf-8',
       ),
   ),
 );
 console.log(`Payer: ${payer.publicKey.toBase58()}`);
 const rpcEndpoint = process.env.RPC_ENDPOINT || config.cluster_urls[cluster];
-const connection = new Connection(rpcEndpoint, 'processed' as Commitment);
+const connection = new Connection(rpcEndpoint, 'confirmed' as Commitment);
 const client = new EntropyClient(connection, entropyProgramId);
 
 let entropySubscriptionId = -1;
@@ -233,7 +237,11 @@ async function main() {
           continue;
         }
 
-        const health = entropyAccount.getHealthRatio(entropyGroup, cache, 'Maint');
+        const health = entropyAccount.getHealthRatio(
+          entropyGroup,
+          cache,
+          'Maint',
+        );
         const accountInfoString = entropyAccount.toPrettyString(
           groupIds,
           entropyGroup,
@@ -341,7 +349,7 @@ function watchAccounts(
           console.error(`could not update entropy account ${err}`);
         }
       },
-      'processed',
+      'confirmed',
       [
         { dataSize: EntropyAccountLayout.span },
         {
@@ -375,7 +383,7 @@ function watchAccounts(
           console.error('Could not match OpenOrdersAccount to EntropyAccount');
         }
       },
-      'processed',
+      'confirmed',
       [
         { dataSize: openOrdersAccountSpan },
         {
@@ -566,7 +574,14 @@ async function liquidateAccount(
     }
   }
 
-  await liquidatePerps(entropyGroup, cache, perpMarkets, rootBanks, liqee, liqor);
+  await liquidatePerps(
+    entropyGroup,
+    cache,
+    perpMarkets,
+    rootBanks,
+    liqee,
+    liqor,
+  );
 
   if (
     !shouldLiquidateSpot &&
@@ -920,7 +935,13 @@ function getDiffsAndNet(
     const marketIndex = groupIds!.spotMarkets[i].marketIndex;
     const diff = entropyAccount
       .getUiDeposit(cache.rootBankCache[marketIndex], entropyGroup, marketIndex)
-      .sub(entropyAccount.getUiBorrow(cache.rootBankCache[marketIndex], entropyGroup, marketIndex))
+      .sub(
+        entropyAccount.getUiBorrow(
+          cache.rootBankCache[marketIndex],
+          entropyGroup,
+          marketIndex,
+        ),
+      )
       .sub(I80F48.fromNumber(target));
     diffs.push(diff);
     netValues.push([i, diff.mul(cache.priceCache[i].price), marketIndex]);
@@ -1046,9 +1067,14 @@ async function balanceTokens(
     for (let i = 0; i < groupIds!.spotMarkets.length; i++) {
       const marketIndex = netValues[i][2];
       const netIndex = netValues[i][0];
-      const marketConfig = groupIds!.spotMarkets.find((m) => m.marketIndex == marketIndex)!
-      const market = markets.find((m) => m.publicKey.equals(entropyGroup.spotMarkets[marketIndex].spotMarket))!;
-      const liquidationFee = entropyGroup.spotMarkets[marketIndex].liquidationFee;
+      const marketConfig = groupIds!.spotMarkets.find(
+        (m) => m.marketIndex == marketIndex,
+      )!;
+      const market = markets.find((m) =>
+        m.publicKey.equals(entropyGroup.spotMarkets[marketIndex].spotMarket),
+      )!;
+      const liquidationFee =
+        entropyGroup.spotMarkets[marketIndex].liquidationFee;
       if (Math.abs(diffs[netIndex].toNumber()) > market!.minOrderSize) {
         const side = netValues[i][1].gt(ZERO_I80F48) ? 'sell' : 'buy';
         const price = entropyGroup

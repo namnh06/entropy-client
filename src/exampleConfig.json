@@ -1,5 +1,15 @@
 [
     {
+        "name": "triton-shared",
+        "rpc_endpoint": "https://friktion-friktion-e7c9.mainnet.rpcpool.com/",
+        "update_cache_interval": 5000,
+        "update_root_bank_cache_interval": 5000,
+        "process_keeper_interval": 5000,
+        "consume_events_interval": 500,
+        "max_unique_accounts": 10,
+        "consume_events_limit": 10
+    },
+    {
         "name": "serum",
         "rpc_endpoint": "https://solana-api.projectserum.com",
         "update_cache_interval": 10000,
